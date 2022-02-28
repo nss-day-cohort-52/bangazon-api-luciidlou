@@ -62,7 +62,7 @@ class OrderView(ViewSet):
         try:
             order = Order.objects.get(pk=pk, user=request.auth.user)
             payment_type = PaymentType.objects.get(
-                pk=request.data['paymentTypeId'], customer=request.auth.user)
+                pk=request.data['paymentTypeId'], customer=request.auth.user_id)
             order.payment_type = payment_type
             order.completed_on = datetime.now()
             return Response({'message': "Order Completed"})
