@@ -169,10 +169,12 @@ class ProductView(ViewSet):
         name = request.query_params.get('name', None)
 
         if number_sold:
+            number_sold = int(number_sold)
             products = products.annotate(
                 order_count=Count('orders')
-            ).filter(order_count__lt=number_sold)
-
+            ).filter(order_count__gte=number_sold)
+            print(len(products))
+            
         if order is not None:
             order_filter = f'-{order}' if direction == 'desc' else order
             products = products.order_by(order_filter)
@@ -252,7 +254,8 @@ class ProductView(ViewSet):
             product = Product.objects.get(pk=pk)
             order = Order.objects.get(
                 user=request.auth.user, completed_on=None)
-            order_product = OrderProduct.objects.get(product=product, order=order)
+            order_product = OrderProduct.objects.get(
+                product=product, order=order)
             order_product.delete()
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         except OrderProduct.DoesNotExist as ex:
