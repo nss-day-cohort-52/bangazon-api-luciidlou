@@ -3,11 +3,13 @@ from bangazon_api.models import Product
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    is_liked = serializers.BooleanField(required=False)
+
     class Meta:
         model = Product
         fields = ('id', 'name', 'price', 'description', 'average_rating',
                   'quantity', 'location', 'image_path', 'category', 'store',
-                  'ratings', 'number_purchased')
+                  'ratings', 'number_purchased', 'is_liked')
         depth = 1
 
 
