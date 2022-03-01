@@ -8,17 +8,20 @@ from django.core.management import call_command
 from django.contrib.auth.models import User
 from bangazon_api.helpers import STATE_NAMES
 from bangazon_api.models import Category
-from bangazon_api.models.product import Product
+from bangazon_api.models import Product, Order
 
 
 class ProductTests(APITestCase):
     def setUp(self):
         """
-
+        Seed the database
         """
         call_command('seed_db', user_count=2)
         self.user1 = User.objects.filter(store__isnull=False).first()
         self.token = Token.objects.get(user=self.user1)
+
+        self.product = Product.objects.first()
+        self.order1 = Order.objects.first()
 
         self.client.credentials(
             HTTP_AUTHORIZATION=f'Token {self.token.key}')
@@ -46,7 +49,6 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.data['id'])
 
-
     def test_update_product(self):
         """
         Ensure we can update a product.
@@ -61,7 +63,8 @@ class ProductTests(APITestCase):
             "imagePath": "",
             "categoryId": product.category.id
         }
-        response = self.client.put(f'/api/products/{product.id}', data, format='json')
+        response = self.client.put(
+            f'/api/products/{product.id}', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         product_updated = Product.objects.get(pk=product.id)
@@ -75,3 +78,9 @@ class ProductTests(APITestCase):
         response = self.client.get('/api/products')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), Product.objects.count())
+
+    def test_cannot_add_product_to_closed_order(self):
+        """Ensures that a user cannot add a new product to an order that is already closed"""
+        url = f'/api/products/{self.product.id}/add_to_order'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
