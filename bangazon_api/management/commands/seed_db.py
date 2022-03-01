@@ -1,7 +1,7 @@
 import random
+from datetime import datetime
 import faker_commerce
 from faker import Faker
-from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from rest_framework.authtoken.models import Token

@@ -4,7 +4,7 @@ from rest_framework.authtoken.models import Token
 from django.core.management import call_command
 from django.contrib.auth.models import User
 
-from bangazon_api.models import Order, Product
+from bangazon_api.models import Order, Product, PaymentType
 
 
 class OrderTests(APITestCase):
@@ -31,6 +31,9 @@ class OrderTests(APITestCase):
 
         self.order2.products.add(product)
 
+        # Create a payment type in setup
+        self.payment_type1 = PaymentType.objects.create(customer=self.user1)
+
         self.client.credentials(
             HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
@@ -38,10 +41,21 @@ class OrderTests(APITestCase):
         """The orders list should return a list of orders for the logged in user"""
         response = self.client.get('/api/orders')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 3)
 
     def test_delete_order(self):
+        """Tests to see if an order can be successfully deleted"""
         response = self.client.delete(f'/api/orders/{self.order1.id}')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # TODO: Complete Order test
+    def test_complete_order(self):
+        """Attempts to complete an order by adding a payment type"""
+        url = f'/api/orders/{self.order1.id}/complete'
+        data = {
+            "paymentTypeId": self.payment_type1.id
+        }
+        response = self.client.put(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        order = Order.objects.get(pk=self.order1.id)
+        self.assertEqual(order.payment_type, self.payment_type1)
+        self.assertIsNotNone(order.completed_on)
