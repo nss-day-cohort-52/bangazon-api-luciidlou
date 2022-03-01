@@ -1,13 +1,15 @@
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.exceptions import ValidationError
-from django.db.models import Q, Count
-
-from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from bangazon_api.models import Store
-from bangazon_api.serializers import StoreSerializer, MessageSerializer, AddStoreSerializer
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+from django.db.models import Count, Q
+from django.contrib.auth.models import User
+from bangazon_api.models import Favorite, Store
+from bangazon_api.serializers import (AddStoreSerializer, MessageSerializer,
+                                      StoreSerializer)
 
 
 class StoreView(ViewSet):
@@ -102,5 +104,31 @@ class StoreView(ViewSet):
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         except ValidationError as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+        except Store.DoesNotExist as ex:
+            return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['post'], detail=True)
+    def favorite(self, request, pk):
+        """Favorite a store"""
+        try:
+            store = Store.objects.get(pk=pk)
+            customer = User.objects.get(pk=request.auth.user_id)
+            Favorite.objects.create(
+                customer=customer,
+                store=store
+            )
+            return Response({'message': 'Store has been added as a favorite'}, status=status.HTTP_201_CREATED)
+        except Store.DoesNotExist as ex:
+            return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['delete'], detail=True)
+    def unfavorite(self, request, pk):
+        """Favorite a store"""
+        try:
+            store = Store.objects.get(pk=pk)
+            customer = User.objects.get(pk=request.auth.user_id)
+            fav = Favorite.objects.get(customer=customer, store=store)
+            fav.delete()
+            return Response({'message': 'Store has been removed from favorites'}, status=status.HTTP_204_NO_CONTENT)
         except Store.DoesNotExist as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
