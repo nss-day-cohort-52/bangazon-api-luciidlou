@@ -81,6 +81,10 @@ class ProductTests(APITestCase):
 
     def test_cannot_add_product_to_closed_order(self):
         """Ensures that a user cannot add a new product to an order that is already closed"""
-        url = f'/api/products/{self.product.id}/add_to_order'
-        response = self.client.post(url)
+        response = self.client.post(
+            f'/api/products/{self.product.id}/add_to_order')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_delete_product(self):
+        response = self.client.delete(f'/api/products/{self.product.id}')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
