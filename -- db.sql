@@ -69,3 +69,16 @@ AND op.product_id = p.id
 WHERE o.completed_on ISNULL
 GROUP BY o.id
 
+CREATE VIEW FAV_SELLERS AS
+SELECT
+u.id as user_id,
+u.first_name || " " || u.last_name as customer,
+s.id as store_id,
+s.name as store
+FROM
+bangazon_api_store as s
+JOIN 
+bangazon_api_favorite as f,
+auth_user as u
+ON s.id = f.store_id
+AND f.customer_id = u.id

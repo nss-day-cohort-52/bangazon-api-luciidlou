@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 import random
 import faker_commerce
 from faker import Faker
@@ -8,7 +9,7 @@ from django.core.management import call_command
 from django.contrib.auth.models import User
 from bangazon_api.helpers import STATE_NAMES
 from bangazon_api.models import Category
-from bangazon_api.models import Product, Order
+from bangazon_api.models import Product, Order, Rating
 
 
 class ProductTests(APITestCase):
@@ -93,6 +94,7 @@ class ProductTests(APITestCase):
         product_unrated = self.product
         url = f'/api/products/{product_unrated.id}/rate-product'
         data = {
+            "customerId": self.user1.id,
             "score": 7,
             "review": "This is a review, my guy"
         }
@@ -101,7 +103,10 @@ class ProductTests(APITestCase):
 
         product_rated = self.client.get(f'/api/products/{product_unrated.id}')
 
-        self.assertEqual(len(product_rated.data['ratings']), 2)
+        rating = Rating.objects.get(
+            customer_id=data['customerId'], product_id=product_rated.data['id'])
+
+        self.assertIsNotNone(rating)
 
         def average_rating():
             total_rating = 0
