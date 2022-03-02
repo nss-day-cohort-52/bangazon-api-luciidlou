@@ -5,6 +5,12 @@ from django.views import View
 
 from bangazon_reports.views.helpers import dict_fetch_all
 
+# Marketing needs a report showing all orders that have been paid for.
+
+# Order Id
+# Customer name
+# Total paid for the order
+# Payment type
 
 class OrderListCompleted(View):
     def get(self, request):
@@ -14,54 +20,30 @@ class OrderListCompleted(View):
                 SELECT
                 *
                 FROM
-                
+                COMPLETED_ORDERS
             """)
             # Pass the db_cursor to the dict_fetch_all function to turn the fetch_all() response into a dictionary
             dataset = dict_fetch_all(db_cursor)
-
-            # Take the flat data from the dataset, and build the
-            # following data structure for each gamer.
-            # This will be the structure of the games_by_user list:
-            #
-            # [
-            #   {
-            #     "id": 1,
-            #     "full_name": "Admina Straytor",
-            #     "games": [
-            #       {
-            #         "id": 1,
-            #         "title": "Foo",
-            #         "maker": "Bar Games",
-            #         "skill_level": 3,
-            #         "number_of_players": 4,
-            #         "game_type_id": 2
-            #       },
-            #       {
-            #         "id": 2,
-            #         "title": "Foo 2",
-            #         "maker": "Bar Games 2",
-            #         "skill_level": 3,
-            #         "number_of_players": 4,
-            #         "game_type_id": 2
-            #       }
-            #     ]
-            #   },
-            # ]
 
             order_list = []
 
             for row in dataset:
                 
-                order = {}
+                order = {
+                    "id": row['order_id'],
+                    "customer": row['customer'],
+                    "order_total": row['order_total'],
+                    "payment_type": row['payment_type']
+                }
                 
                 order_list.append(order)
 
         # The template string must match the file name of the html template
-        template = 'orders/orders_completed.html'
+        template = 'orders/order_list_completed.html'
 
         # The context will be a dictionary that the template can access to show data
         context = {
-            "order_list": order_list
+            "orders_completed": order_list
         }
 
         return render(request, template, context)
