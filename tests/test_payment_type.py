@@ -28,7 +28,6 @@ class PaymentTests(APITestCase):
         """
         Ensure we can add a payment type for a customer.
         """
-        # Add product to order
         data = {
             "merchant": self.faker.credit_card_provider(),
             "acctNumber": self.faker.credit_card_number()

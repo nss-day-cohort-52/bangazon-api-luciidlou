@@ -80,6 +80,7 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), Product.objects.count())
 
+    # ? Is this considered air-tight? See 'completed_on=None' arg in get_or_create ORM method on line 241, product_view.py
     def test_cannot_add_product_to_closed_order(self):
         """Ensures that a user cannot add a new product to an order that is already closed"""
         response = self.client.post(

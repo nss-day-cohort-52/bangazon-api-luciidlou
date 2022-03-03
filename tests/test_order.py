@@ -31,7 +31,6 @@ class OrderTests(APITestCase):
 
         self.order2.products.add(product)
 
-        # Create a payment type in setup
         self.payment_type1 = PaymentType.objects.create(customer=self.user1)
 
         self.client.credentials(
@@ -41,6 +40,7 @@ class OrderTests(APITestCase):
         """The orders list should return a list of orders for the logged in user"""
         response = self.client.get('/api/orders')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # ? This works in tandem with 'user_count=3' on line 15??
         self.assertEqual(len(response.data), 3)
 
     def test_delete_order(self):

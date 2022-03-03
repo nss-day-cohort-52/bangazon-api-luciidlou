@@ -34,6 +34,9 @@ class FavoriteSellersList(View):
                     "name": row['store']
                 }
 
+                # ? What is happening here?
+                # ? I realize we are embedding a list of favorited stores onto each customer...
+                # ? but how?
 
                 user_dict = next(
                     (
@@ -42,7 +45,7 @@ class FavoriteSellersList(View):
                     ),
                     None
                 )
-                
+
                 if user_dict:
                     # If the user_dict is already in the customers list, append the store to the stores list
                     user_dict['stores'].append(store)
